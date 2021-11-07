@@ -1,7 +1,15 @@
-all: a0
+all: project1
 
-a0: a0.c
-	cc a0.c -o a0
+project1:
+	clear
+	cc project1.c -o project1 -pedantic 
+
+run: clean project1
+	./project1 tests/input.txt
+	make clean
+
+test:
+	bats tests.bats
 
 clean:
-	rm -f a0
+	rm -f project1
