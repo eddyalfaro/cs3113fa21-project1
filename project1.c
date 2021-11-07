@@ -30,7 +30,7 @@ void fromFile(FILE* inpt, prcss* a){
 	fscanf(inpt, "%d %d %d", &(a->prcssId), &(a->exec_time), &_temp);
 }
 
-void scanFile(FILE* _file, prcss* array, int size){
+void scan(FILE* _file, prcss* array, int size){
 	
 	int pid, burst, priority;
 	swtchs = 0;
@@ -57,8 +57,6 @@ int main(int argc, char** argv){
 
 	prcss* prcss_stats = malloc(num_instr*sizeof(prcss));
 	for (int i = 0; i < num_instr; i++) fromFile(inputFile, &(prcss_stats[i]));
-	for (int i = 0; i < num_instr; i++) print(&(prcss_stats[i]));
-	scanFile(inputFile, prcss_stats, num_prcss);	
 
 	return 0;
 }
