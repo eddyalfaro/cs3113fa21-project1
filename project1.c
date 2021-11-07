@@ -69,14 +69,14 @@ void scan(FILE* _file, prcss* array){
 
 			ta_time += getTATime(_final[array[i].prcssId]);
 			wtime += _final[array[i].prcssId].wait_time; 
-			if (isUnvol(_final[array[i].prcssId]) != 0) unv_swtchs++;
-			else if (_temp == _final[array[i].prcssId].wait_time) concurr++;
+			if (_temp == _final[array[i].prcssId].wait_time) concurr++;
+			else if (isUnvol(_final[array[i].prcssId]) != 0) unv_swtchs++;
 		}		
 
 		exec_time += array[i].burst;
 	}
 
-	vol_swtchs = swtchs - unv_swtchs - concurr;
+	vol_swtchs = swtchs - unv_swtchs;
 	printf("%d\n%d\n100.00\n", vol_swtchs, unv_swtchs);
 	printf("%.2f\n%.2f\n%.2f\n%.2f\n",
 		num_prcss/((double) exec_time), ((double) ta_time)/num_prcss, ((double)wtime)/num_prcss, 
