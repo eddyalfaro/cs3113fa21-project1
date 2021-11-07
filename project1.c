@@ -76,7 +76,7 @@ void scan(FILE* _file, prcss* array){
 		exec_time += array[i].burst;
 	}
 
-	vol_swtchs = swtchs - unv_swtchs;
+	vol_swtchs = swtchs - unv_swtchs - concurr;
 	printf("%d\n%d\n100.00\n", vol_swtchs, unv_swtchs);
 	printf("%.2f\n%.2f\n%.2f\n%.2f\n",
 		num_prcss/((double) exec_time), ((double) ta_time)/num_prcss, ((double)wtime)/num_prcss, 
