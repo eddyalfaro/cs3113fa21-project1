@@ -16,6 +16,4 @@ clean:
 commit:
 	git add .
 	git commit -m "template commit from Makefile"
-	git push
-	eddyalfaro
-	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
+	git push < gitCredentials
