@@ -6,17 +6,19 @@
 #include <string.h>
 
 int processors, num_prcss, num_instr;
-int swtchs, unc_swtchs, vol_swtchs;
+int swtchs, unv_swtchs, vol_swtchs;
 
 typedef struct prcss{
 	
 	int prcssId;
-	int exec_time;
+	int burst;
+	int res_time;
+	int wait_time;
 
 }prcss;
 
 void print(prcss* a){
-	printf("<ID = %d, Burst = %d>\n", a->prcssId, a->exec_time);
+	printf("<ID = %d, Burst = %d, Time of Response = %d, Wait Time = %d>\n", a->prcssId, a->burst, a->res_time, a->wait_time);
 }
 
 void errExit(int errNum){
@@ -27,19 +29,59 @@ void errExit(int errNum){
 
 void fromFile(FILE* inpt, prcss* a){
 	int _temp;
-	fscanf(inpt, "%d %d %d", &(a->prcssId), &(a->exec_time), &_temp);
+	fscanf(inpt, "%d %d %d", &(a->prcssId), &(a->burst), &_temp);
 }
 
-void scan(FILE* _file, prcss* array, int size){
+int isUnvol(prcss a){
+	return a.wait_time - a.res_time;
+}
+
+int getTATime(prcss a){
+	return a.burst + a.wait_time;
+}
+
+void scan(FILE* _file, prcss* array){
 	
-	int pid, burst, priority;
-	swtchs = 0;
+	unv_swtchs = 0; swtchs = num_instr - 1;
 
-	while (fscanf(_file, "%d %d %d", &pid, &burst, &priority) > 0){	
+	prcss* _final = malloc((num_prcss + 1)*sizeof(prcss));
+	int exec_time = 0, ta_time = 0, wtime = 0, rtime = 0;
 
-		++swtchs;
+	for (int i = 0; i < num_instr; i++){
+		
+		if (_final[array[i].prcssId].prcssId == 0){
+			_final[array[i].prcssId].prcssId = array[i].prcssId;
+			_final[array[i].prcssId].burst = array[i].burst;
+			_final[array[i].prcssId].res_time = exec_time;
+			_final[array[i].prcssId].wait_time = exec_time;
+
+			ta_time += getTATime(_final[array[i].prcssId]);
+			wtime += exec_time;
+			rtime += exec_time;
+		}else {
+			ta_time -= getTATime(_final[array[i].prcssId]);
+			wtime -= _final[array[i].prcssId].wait_time; 
+
+			_final[array[i].prcssId].wait_time = exec_time - _final[array[i].prcssId].burst;
+			_final[array[i].prcssId].burst += array[i].burst;
+
+			ta_time += getTATime(_final[array[i].prcssId]);
+			wtime += _final[array[i].prcssId].wait_time; 
+			if (isUnvol(_final[array[i].prcssId]) != 0) unv_swtchs++;
+		}		
+
+		exec_time += array[i].burst;
 	}
 
+	vol_swtchs = swtchs - unv_swtchs;
+	printf("Unv_Swtchs = %d\nVol_Swtchs = %d\n", unv_swtchs, vol_swtchs);
+	printf("Troughput = %.2f\nTurnaround Time = %.2f\nWait Time = %.2f\nResponse Time = %.2f\n",
+		num_prcss/((float) exec_time), ((float) ta_time)/num_prcss, ((float)wtime)/num_prcss, 
+		((float)rtime)/num_prcss);
+	for (int i = 0; i < num_prcss + 1; i++) print(&_final[i]);
+
+
+	free(_final);
 }
 
 
@@ -53,10 +95,16 @@ int main(int argc, char** argv){
 	if (inputFile == NULL)
 		errExit(errno);
 
-	fscanf(inputFile, "%d %d %d", &processors, &num_prcss, &num_instr);
+	fscanf(inputFile, "%d %d %d", &processors, &num_prcss, &num_instr);	
 
 	prcss* prcss_stats = malloc(num_instr*sizeof(prcss));
 	for (int i = 0; i < num_instr; i++) fromFile(inputFile, &(prcss_stats[i]));
+
+	scan(inputFile, prcss_stats);
+	free(prcss_stats);	
+
+	if (fclose(inputFile) != 0)
+		errExit(errno);
 
 	return 0;
 }
