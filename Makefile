@@ -1,7 +1,6 @@
 all: project1
 
 project1:
-	clear
 	cc project1.c -o project1 -pedantic 
 
 run: clean project1
